@@ -302,13 +302,29 @@ function analyze(rows) {
   setText("target",target==null?"Belum cukup data":rupiah(target));
   setText("stop",stop==null?"Belum cukup data":rupiah(stop));
 
-  let currentRR = null;
-  if (entry!=null && target>entry && entry>stop) {
-    currentRR = (target-entry)/(entry-stop);
-    setText("rr","1 : "+fmt(currentRR));
+  
+let currentRR = null;
+const maxEntry = entry;
+
+if (
+  entry != null &&
+  target != null &&
+  stop != null &&
+  target > last.close &&
+  last.close > stop
+) {
+  const potential = target - last.close;
+  const risk = last.close - stop;
+
+  if (potential > 0 && risk > 0) {
+    currentRR = potential / risk;
+    setText("rr", fmt(currentRR) + " : 1");
   } else {
-    setText("rr","Belum layak dihitung");
+    setText("rr", "Belum layak dihitung");
   }
+} else {
+  setText("rr", "Harga di luar area simulasi");
+}
 
   let signal = "TAHAN — tunggu konfirmasi.";
   let cls = "neutral";
