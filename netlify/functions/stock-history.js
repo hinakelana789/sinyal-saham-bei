@@ -37,57 +37,74 @@ export default async (request) => {
       return new Response(
         JSON.stringify({
           ok: false,
-          error: "Kode saham tidak valid."
+          error: "Kode saham tidak valid.",
+          rows: []
         }),
         { status: 400, headers }
       );
     }
 
-    const response = await fetch(
+    const apiResponse = await fetch(
       `https://use.api.co.id/idx/v2/chart/daily/${symbol}`,
       {
+        method: "GET",
         headers: {
           "x-api-co-id": apiKey
         }
       }
     );
 
-    const body = await response.text();
+    const body = await apiResponse.text();
 
-    if (!response.ok) {
-      return new Response(
-        JSON.stringify({
-          ok: false,
-          error: "API saham mengembalikan status " + response.status
-        }),
-        { status: 502, headers }
-      );
-    }
-
-    let data;
+    let result;
 
     try {
-      data = JSON.parse(body);
+      result = JSON.parse(body);
     } catch {
       return new Response(
         JSON.stringify({
           ok: false,
-          error: "Respons API bukan JSON yang valid."
+          error: "Respons API bukan JSON yang valid.",
+          rows: []
         }),
         { status: 502, headers }
       );
     }
 
+    if (!apiResponse.ok || result.is_success !== true) {
+      return new Response(
+        JSON.stringify({
+          ok: false,
+          error: result.message ||
+            `API saham mengembalikan status ${apiResponse.status}.`,
+          rows: []
+        }),
+        { status: 502, headers }
+      );
+    }
+
+    const possibleRows = [
+      result?.data?.data,
+      result?.data?.rows,
+      result?.data?.items,
+      result?.data,
+      result?.rows,
+      result?.items,
+      result
+    ];
+
+    const rows = possibleRows.find(
+      (item) => Array.isArray(item)
+    ) || [];
+
     return new Response(
       JSON.stringify({
-        ok: true,
-        rows: Array.isArray(data)
-          ? data
-          : Array.isArray(data.rows)
-            ? data.rows
-            : Array.isArray(data.data)
-              ? data.data
-              : []
+        ok: rows.length > 0,
+        error: rows.length > 0
+          ? null
+          : "API berhasil dihubungi, tetapi format atau isi riwayat harga belum dikenali.",
+        symbol,
+        rows
       }),
       { status: 200, headers }
     );
@@ -95,7 +112,8 @@ export default async (request) => {
     return new Response(
       JSON.stringify({
         ok: false,
-        error: "Gagal mengambil data saham."
+        error: "Koneksi ke API saham gagal. Periksa koneksi dan konfigurasi Netlify.",
+        rows: []
       }),
       { status: 500, headers }
     );
