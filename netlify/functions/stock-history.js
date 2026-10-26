@@ -22,7 +22,8 @@ export default async (request) => {
       return new Response(
         JSON.stringify({
           ok: false,
-          error: "API Key belum diatur di Netlify."
+          error: "API Key belum diatur di Netlify.",
+          rows: []
         }),
         { status: 500, headers }
       );
@@ -44,67 +45,109 @@ export default async (request) => {
       );
     }
 
-    const apiResponse = await fetch(
-      `https://use.api.co.id/idx/v2/chart/daily/${symbol}`,
-      {
+    const allRows = [];
+    const seenCursors = new Set();
+    let cursor = "";
+    let pages = 0;
+    let lastResult = null;
+
+    while (pages < 5) {
+      const endpoint =
+        `https://use.api.co.id/idx/v2/chart/daily/${symbol}` +
+        `?cursor=${encodeURIComponent(cursor)}`;
+
+      const apiResponse = await fetch(endpoint, {
         method: "GET",
         headers: {
           "x-api-co-id": apiKey
         }
+      });
+
+      const body = await apiResponse.text();
+
+      let result;
+
+      try {
+        result = JSON.parse(body);
+      } catch {
+        return new Response(
+          JSON.stringify({
+            ok: false,
+            error: "Respons API bukan JSON yang valid.",
+            rows: []
+          }),
+          { status: 502, headers }
+        );
       }
-    );
 
-    const body = await apiResponse.text();
+      if (!apiResponse.ok || result.is_success !== true) {
+        return new Response(
+          JSON.stringify({
+            ok: false,
+            error: result.message ||
+              `API saham mengembalikan status ${apiResponse.status}.`,
+            rows: []
+          }),
+          { status: 502, headers }
+        );
+      }
 
-    let result;
+      lastResult = result;
+      pages++;
 
-    try {
-      result = JSON.parse(body);
-    } catch {
-      return new Response(
-        JSON.stringify({
-          ok: false,
-          error: "Respons API bukan JSON yang valid.",
-          rows: []
-        }),
-        { status: 502, headers }
-      );
+      const possibleRows = [
+        result?.data?.data,
+        result?.data?.rows,
+        result?.data?.items,
+        result?.data,
+        result?.rows,
+        result?.items
+      ];
+
+      const rows = possibleRows.find(
+        (item) => Array.isArray(item)
+      ) || [];
+
+      allRows.push(...rows);
+
+      const nextCursor = result?.data?.meta?.cursor;
+
+      if (
+        !nextCursor ||
+        typeof nextCursor !== "string" ||
+        seenCursors.has(nextCursor) ||
+        rows.length === 0
+      ) {
+        break;
+      }
+
+      seenCursors.add(nextCursor);
+      cursor = nextCursor;
     }
 
-    if (!apiResponse.ok || result.is_success !== true) {
-      return new Response(
-        JSON.stringify({
-          ok: false,
-          error: result.message ||
-            `API saham mengembalikan status ${apiResponse.status}.`,
-          rows: []
-        }),
-        { status: 502, headers }
-      );
+    const uniqueRows = [];
+    const seenRows = new Set();
+
+    for (const row of allRows) {
+      const key = JSON.stringify(row);
+
+      if (!seenRows.has(key)) {
+        seenRows.add(key);
+        uniqueRows.push(row);
+      }
     }
-
-    const possibleRows = [
-      result?.data?.data,
-      result?.data?.rows,
-      result?.data?.items,
-      result?.data,
-      result?.rows,
-      result?.items,
-      result
-    ];
-
-    const rows = possibleRows.find(
-      (item) => Array.isArray(item)
-    ) || [];
 
     return new Response(
       JSON.stringify({
-        ok: rows.length > 0,
-        error: rows.length > 0
+        ok: uniqueRows.length > 0,
+        error: uniqueRows.length > 0
           ? null
-          : "API berhasil dihubungi, tetapi format atau isi riwayat harga belum dikenali.",
+          : "API berhasil dihubungi, tetapi format riwayat harga belum dikenali.",
         symbol,
-        rows
+        rows: uniqueRows,
+        pages_fetched: pages,
+        pagination_cursor_available:
+          Boolean(lastResult?.data?.meta?.cursor)
       }),
       { status: 200, headers }
     );
