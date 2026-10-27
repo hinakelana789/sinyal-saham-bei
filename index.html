@@ -176,7 +176,14 @@ function calcAnalysis(inputRows){
  else if(trendPositive&&momentumPositive&&!nearEntry){signal="PANTAU — TUNGGU AREA MASUK";reason="Tren dan momentum mendukung, tetapi harga belum berada di area masuk simulasi.";}
  else if(trendPositive&&momentumPositive&&(!validLevels||rr<1.5||potentialPct>30)){signal="PANTAU — RISIKO/TARGET";reason=potentialPct>30?"Target simulasi terlalu jauh (>30% dari area masuk); rasio tinggi tidak dianggap cukup sebagai sinyal.":"Rasio potensi terhadap risiko belum memenuhi syarat.";}
  else if(momentumNegative){signal="HINDARI BELI";cls="bad";reason="Momentum lemah: MACD di bawah signal dan RSI di bawah 45. Tunggu konfirmasi baru.";}
- const score=enough?Math.max(0,Math.min(100,50+(trendPositive?20:trendNegative?-20:0)+(momentumPositive?15:momentumNegative?-15:0)+(rsi>=45&&rsi<65?5:rsi<30?-5:rsi>=70?-10:0)+(macd.hist>0?10:-5)+(nearEntry?5:0)-(potentialPct>30?10:0))):null;
+ // Skor transparan 0–100: tren 30, momentum 25, RSI 15, MACD 15, area masuk 15.
+ // Skor mengukur kesesuaian teknikal, bukan probabilitas keuntungan.
+ const trendPts=trendPositive?30:trendNegative?0:15;
+ const momentumPts=momentumPositive?25:momentumNegative?0:12;
+ const rsiPts=(rsi>=50&&rsi<65)?15:((rsi>=45&&rsi<50)||(rsi>=65&&rsi<70))?8:0;
+ const macdPts=(macd.hist>0&&macd.line>macd.signal)?15:0;
+ const entryPts=nearEntry?15:(validLevels&&entry>0&&Math.abs(last.close-entry)/entry<=0.03)?7:0;
+ const score=enough?Math.max(0,Math.min(100,trendPts+momentumPts+rsiPts+macdPts+entryPts)):null;
  return {symbol:"",rows:parsed,last,previous:prev,dailyChange,s5,s20,rsi,macd,support,resistance,entry,target,stop,rr,potentialPct,riskPct,enough,trendPositive,trendNegative,momentumPositive,momentumNegative,signal,cls,reason,score};
 }
 function renderAnalysis(a){
