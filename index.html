@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="id">
 <head>
@@ -8,53 +7,36 @@
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#09111f;color:#edf3ff;font:15px system-ui,sans-serif}
-main{max-width:1000px;margin:auto;padding:16px}
-h1{font-size:27px;margin:8px 0}
-h1 span{color:#38d9c0}
-h2{font-size:18px;margin:0 0 12px}
-p{line-height:1.5}
-.muted{color:#9aabc4;font-size:13px}
+main{max-width:1100px;margin:auto;padding:16px}
+h1{font-size:27px;margin:8px 0}h1 span{color:#38d9c0}h2{font-size:18px;margin:0 0 12px}
+p{line-height:1.5}.muted{color:#9aabc4;font-size:13px}
 .panel{background:#121e30;border:1px solid #283951;border-radius:15px;padding:16px;margin:13px 0}
 input,button{font:inherit;border-radius:9px;padding:12px;border:1px solid #30435c}
 input{background:#091525;color:white;width:135px;text-transform:uppercase}
-button{background:#38d9c0;color:#06131a;font-weight:700;cursor:pointer}
-button:disabled{opacity:.5}
+button{background:#38d9c0;color:#06131a;font-weight:700;cursor:pointer}button:disabled{opacity:.5}
 .stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
-.stat{background:#091525;border-radius:10px;padding:12px;min-width:0}
-.stat small{display:block;color:#9aabc4;margin-bottom:6px}
-.stat strong{font-size:17px;overflow-wrap:anywhere}
-.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-.metric{padding:12px;background:#091525;border-radius:10px}
-.metric small{display:block;color:#9aabc4;margin-bottom:5px}
+.stat{background:#091525;border-radius:10px;padding:12px;min-width:0}.stat small{display:block;color:#9aabc4;margin-bottom:6px}
+.stat strong{font-size:17px;overflow-wrap:anywhere}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.metric{padding:12px;background:#091525;border-radius:10px}.metric small{display:block;color:#9aabc4;margin-bottom:5px}
 .pill{display:inline-block;padding:6px 10px;border-radius:20px;background:#24364c;font-weight:700}
-.good{color:#45e0aa}
-.bad{color:#ff8e9b}
-.neutral{color:#ffd479}
+.good{color:#45e0aa}.bad{color:#ff8e9b}.neutral{color:#ffd479}
 table{width:100%;border-collapse:collapse;font-size:12px;white-space:nowrap}
-th,td{text-align:right;padding:9px 7px;border-bottom:1px solid #283951}
-th:first-child,td:first-child{text-align:left}
-th{color:#aabbd3}
-.scroll{overflow-x:auto}
-.status{white-space:pre-wrap;color:#b4c5dd;font-size:13px;margin-top:10px}
-.note{font-size:12px;line-height:1.6;color:#aabbd3}
-@media(max-width:520px){
- main{padding:10px}
- .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
- .grid{grid-template-columns:1fr}
- h1{font-size:24px}
-}
+th,td{text-align:right;padding:9px 7px;border-bottom:1px solid #283951}th:first-child,td:first-child{text-align:left}
+th{color:#aabbd3}.scroll{overflow-x:auto}.status{white-space:pre-wrap;color:#b4c5dd;font-size:13px;margin-top:10px}
+.note{font-size:12px;line-height:1.6;color:#aabbd3}.actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.actions button{margin-top:5px}.rank-table td:nth-child(1),.rank-table th:nth-child(1),.rank-table td:nth-child(2),.rank-table th:nth-child(2){text-align:left}
+@media(max-width:520px){main{padding:10px}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.grid{grid-template-columns:1fr}h1{font-size:24px}input{width:120px}}
 </style>
 </head>
 <body>
 <main>
 <h1>Sinyal <span>Saham BEI</span></h1>
-<p class="muted">Dashboard riset teknikal berdasarkan riwayat harga harian. Gunakan data untuk membantu riset, bukan sebagai jaminan keuntungan.</p>
+<p class="muted">Dashboard riset teknikal berdasarkan riwayat harga harian. Sinyal dan peringkat adalah alat bantu riset, bukan jaminan keuntungan.</p>
 
 <section class="panel">
 <h2>Analisis saham</h2>
 <p class="muted">Contoh: BBCA, BBRI, TLKM, ASII, WAPO.</p>
-<input id="sym" value="BBCA" maxlength="5" aria-label="Kode saham">
-<button id="go">Analisis</button>
+<div class="actions"><input id="sym" value="BBCA" maxlength="5" aria-label="Kode saham"><button id="go">Analisis</button><button id="rankBtn" type="button">Bandingkan 5 saham</button></div>
 <div id="status" class="status">Siap mengambil data.</div>
 <div class="stats" style="margin-top:12px">
 <div class="stat"><small>Penutupan terakhir</small><strong id="price">—</strong></div>
@@ -64,415 +46,181 @@ th{color:#aabbd3}
 </section>
 
 <section class="panel">
-<h2>Kesimpulan teknikal</h2>
-<p id="signal">Masukkan kode saham dan tekan Analisis.</p>
+<h2>Kesimpulan teknikal</h2><p id="signal">Masukkan kode saham dan tekan Analisis.</p>
 <p id="reason" class="muted">Kesimpulan akan dihitung dari data yang tersedia.</p>
 </section>
 
 <section class="panel">
-<h2>Indikator teknikal</h2>
-<div class="grid">
+<h2>Indikator teknikal</h2><div class="grid">
 <div class="metric"><small>SMA 5 hari</small><strong id="sma5">—</strong></div>
 <div class="metric"><small>SMA 20 hari</small><strong id="sma20">—</strong></div>
 <div class="metric"><small>RSI 14</small><strong id="rsi">—</strong><p id="rsiNote" class="muted"></p></div>
 <div class="metric"><small>MACD / Signal</small><strong id="macd">—</strong><p id="macdNote" class="muted"></p></div>
-</div>
-<p class="note">SMA membantu membaca tren, RSI mengukur momentum, dan MACD membandingkan dua rata-rata bergerak eksponensial. Indikator dapat terlambat dan bisa menghasilkan sinyal keliru.</p>
+</div><p class="note">SMA membantu membaca tren, RSI mengukur momentum, dan MACD membandingkan rata-rata bergerak eksponensial. Indikator bisa terlambat atau menghasilkan sinyal keliru.</p>
 </section>
 
 <section class="panel">
-<h2>Area harga penting</h2>
-<div class="grid">
+<h2>Area harga penting</h2><div class="grid">
 <div class="metric"><small>Perkiraan support</small><strong id="support">—</strong></div>
 <div class="metric"><small>Perkiraan resistance</small><strong id="resistance">—</strong></div>
 <div class="metric"><small>Area pantauan masuk</small><strong id="entry">—</strong></div>
 <div class="metric"><small>Target pantauan</small><strong id="target">—</strong></div>
 <div class="metric"><small>Batas risiko pantauan</small><strong id="stop">—</strong></div>
-<div class="metric"><small>Rasio potensi : risiko</small><strong id="rr">—</strong></div>
-</div>
-<p class="note">Support dan resistance dihitung dari rentang data historis yang tersedia, bukan level pasti. Area masuk, target, dan batas risiko merupakan simulasi teknikal; periksa spread, likuiditas, biaya transaksi, dan kondisi pasar sebelum mengambil keputusan.</p>
+<div class="metric"><small>Potensi / risiko</small><strong id="rr">—</strong><p id="rrNote" class="muted"></p></div>
+</div><p class="note">Level ini simulasi dari rentang historis, bukan level pasti. Rasio tinggi dapat menyesatkan bila target sangat jauh atau peluang target tercapai rendah. Periksa spread, likuiditas, biaya, dan kondisi pasar.</p>
 </section>
 
 <section class="panel">
-<h2>Riwayat harga harian</h2>
-<div class="scroll">
-<table>
+<h2>Peringkat teknikal: BBCA, BBRI, TLKM, ASII, WAPO</h2>
+<p class="muted">Tekan “Bandingkan 5 saham”. Peringkat hanya membandingkan data yang berhasil dimuat; saham dengan data gagal atau tidak cukup tidak diberi skor.</p>
+<div id="rankStatus" class="status">Belum ada perbandingan.</div>
+<div class="scroll"><table class="rank-table"><thead><tr><th>Rank</th><th>Saham</th><th>Harga</th><th>Tanggal data</th><th>Perubahan</th><th>RSI</th><th>Tren</th><th>Sinyal</th><th>Skor</th></tr></thead><tbody id="rankRows"><tr><td colspan="9">Belum ada data.</td></tr></tbody></table></div>
+<p class="note">Skor adalah indikator ringkas berbasis tren SMA, momentum RSI/MACD, dan kedekatan ke area masuk; bukan probabilitas keuntungan dan bukan rekomendasi otomatis.</p>
+</section>
+
+<section class="panel"><h2>Riwayat harga harian</h2><div class="scroll"><table>
 <thead><tr><th>Tanggal</th><th>Open</th><th>High</th><th>Low</th><th>Close</th><th>Volume</th></tr></thead>
 <tbody id="rows"><tr><td colspan="6">Belum ada data.</td></tr></tbody>
-</table>
-</div>
-</section>
+</table></div></section>
 
-<section class="panel note">
-<b>Catatan penggunaan</b>
-<p>Data berasal dari Api.co.id melalui fungsi server Netlify. Paket gratis Api.co.id memiliki batas kuota bulanan. Dashboard ini belum menggunakan data real-time atau order book. Selalu periksa tanggal data dan verifikasi harga melalui aplikasi sekuritas.</p>
-<p>RSI di atas 70 sering dianggap area jenuh beli dan RSI di bawah 30 area jenuh jual, tetapi keduanya bukan sinyal beli atau jual yang berdiri sendiri.</p>
-</section>
+<section class="panel note"><b>Catatan penggunaan</b>
+<p>Data berasal dari Api.co.id melalui fungsi server Netlify. Paket gratis dapat memiliki batas kuota. Dashboard ini tidak menggunakan data real-time atau order book. Tanggal terakhir yang tampil adalah tanggal pada data yang diterima, bukan jaminan data terkini. Verifikasi harga melalui aplikasi sekuritas.</p>
+<p>RSI di atas 70 sering disebut area jenuh beli dan di bawah 30 jenuh jual, tetapi bukan sinyal beli atau jual yang berdiri sendiri. Saham dengan likuiditas rendah, suspensi, atau data tidak lengkap memerlukan pemeriksaan tambahan.</p></section>
 </main>
-
 <script>
 const $ = id => document.getElementById(id);
-
-const num = v => {
-  if (v === null || v === undefined || v === "") return null;
-  const n = Number(v);
-  return Number.isFinite(n) ? n : null;
-};
-
-const fmt = v => v == null || !Number.isFinite(v)
-  ? "—"
-  : v.toLocaleString("id-ID", {maximumFractionDigits:2});
-
-const rupiah = v => v == null || !Number.isFinite(v)
-  ? "—"
-  : "Rp " + Math.round(v).toLocaleString("id-ID");
-
-const pick = (obj, keys) => {
-  for (const key of keys) {
-    if (obj && obj[key] !== undefined && obj[key] !== null && obj[key] !== "") {
-      return obj[key];
-    }
-  }
-  return null;
-};
-
-function extractRows(json) {
-  const candidates = [
-    json?.rows,
-    json?.data?.data,
-    json?.data?.rows,
-    json?.data?.items,
-    json?.data,
-    json?.items
-  ];
-  return candidates.find(Array.isArray) || [];
+const WATCHLIST = ["BBCA","BBRI","TLKM","ASII","WAPO"];
+const num = v => { if(v===null||v===undefined||v==="") return null; const n=Number(v); return Number.isFinite(n)?n:null; };
+const fmt = v => v==null||!Number.isFinite(v)?"—":v.toLocaleString("id-ID",{maximumFractionDigits:2});
+const rupiah = v => v==null||!Number.isFinite(v)?"—":"Rp "+Math.round(v).toLocaleString("id-ID");
+const pick = (obj,keys) => { for(const key of keys) if(obj&&obj[key]!==undefined&&obj[key]!==null&&obj[key]!=="") return obj[key]; return null; };
+function extractRows(json){const candidates=[json?.rows,json?.data?.data,json?.data?.rows,json?.data?.items,json?.data,json?.items];return candidates.find(Array.isArray)||[];}
+function normalizeRows(rows){
+ return rows.map(x=>{const date=pick(x,["date","datetime","time","timestamp","trading_date"]);return {date:date==null?"":String(date),open:num(pick(x,["open","o","open_price"])),high:num(pick(x,["high","h","high_price"])),low:num(pick(x,["low","l","low_price"])),close:num(pick(x,["close","c","last","price","close_price"])),volume:num(pick(x,["volume","vol","v"]))};}).filter(x=>x.close!=null&&x.close>0);
 }
-
-function normalizeRows(rows) {
-  return rows.map(x => {
-    const date = pick(x, ["date","datetime","time","timestamp","trading_date"]);
-    return {
-      date: date == null ? "" : String(date),
-      open: num(pick(x, ["open","o","open_price"])),
-      high: num(pick(x, ["high","h","high_price"])),
-      low: num(pick(x, ["low","l","low_price"])),
-      close: num(pick(x, ["close","c","last","price","close_price"])),
-      volume: num(pick(x, ["volume","vol","v"]))
-    };
-  }).filter(x => x.close != null && x.close > 0);
+function dateKey(value){
+ const s=String(value||"");
+ let m=s.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
+ if(m)return Number(m[1]+m[2].padStart(2,"0")+m[3].padStart(2,"0"));
+ m=s.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})/);
+ if(m)return Number(m[3]+m[2].padStart(2,"0")+m[1].padStart(2,"0"));
+ const d=Date.parse(s);return Number.isNaN(d)?null:d;
 }
-
-function sma(values, period) {
-  if (values.length < period) return null;
-  const part = values.slice(-period);
-  return part.reduce((a,b) => a+b, 0) / period;
+function sortRows(rows){
+ const parsed=normalizeRows(rows);
+ if(parsed.length>1 && parsed.every(x=>dateKey(x.date)!==null)) parsed.sort((a,b)=>dateKey(a.date)-dateKey(b.date));
+ return parsed;
 }
-
-function emaSeries(values, period) {
-  if (values.length < period) return [];
-  const alpha = 2 / (period + 1);
-  const out = [];
-  let current = values.slice(0,period).reduce((a,b)=>a+b,0) / period;
-  out[period-1] = current;
-  for (let i=period;i<values.length;i++) {
-    current = values[i] * alpha + current * (1-alpha);
-    out[i] = current;
-  }
-  return out;
+function sma(values,period){if(values.length<period)return null;return values.slice(-period).reduce((a,b)=>a+b,0)/period;}
+function emaSeries(values,period){
+ if(values.length<period)return [];
+ const alpha=2/(period+1),out=[];let current=values.slice(0,period).reduce((a,b)=>a+b,0)/period;out[period-1]=current;
+ for(let i=period;i<values.length;i++){current=values[i]*alpha+current*(1-alpha);out[i]=current;}return out;
 }
-
-function calcRSI(values, period=14) {
-  if (values.length < period+1) return null;
-  let gain=0, loss=0;
-  for (let i=values.length-period;i<values.length;i++) {
-    const diff=values[i]-values[i-1];
-    if (diff>0) gain+=diff;
-    else loss-=diff;
-  }
-  const avgGain=gain/period;
-  const avgLoss=loss/period;
-  if (avgLoss===0) return avgGain===0 ? 50 : 100;
-  return 100-(100/(1+avgGain/avgLoss));
+function calcRSI(values,period=14){
+ if(values.length<period+1)return null;let gain=0,loss=0;
+ for(let i=values.length-period;i<values.length;i++){const diff=values[i]-values[i-1];if(diff>0)gain+=diff;else loss-=diff;}
+ const avgGain=gain/period,avgLoss=loss/period;if(avgLoss===0)return avgGain===0?50:100;return 100-(100/(1+avgGain/avgLoss));
 }
-
-function calcMACD(values) {
-  const fast=emaSeries(values,12);
-  const slow=emaSeries(values,26);
-  const line=[];
-  for(let i=0;i<values.length;i++) {
-    if(fast[i]!==undefined && slow[i]!==undefined) {
-      line[i]=fast[i]-slow[i];
-    }
-  }
-  const valid=line.filter(v=>v!==undefined);
-  if(valid.length<9) return null;
-  const signalValues=emaSeries(valid,9);
-  const signal=signalValues[signalValues.length-1];
-  const macd=line[line.length-1];
-  return {macd,signal,hist:macd-signal};
+function calcMACD(values){
+ const fast=emaSeries(values,12),slow=emaSeries(values,26),line=[];
+ for(let i=0;i<values.length;i++)if(fast[i]!==undefined&&slow[i]!==undefined)line.push(fast[i]-slow[i]);
+ if(line.length<9)return null;const sig=emaSeries(line,9),macd=line[line.length-1],signal=sig[sig.length-1];
+ return Number.isFinite(macd)&&Number.isFinite(signal)?{macd,signal,hist:macd-signal}:null;
 }
-function dateKey(value) {
-  const m = value.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
-  if (m) return Number(m[1] + m[2].padStart(2,"0") + m[3].padStart(2,"0"));
-  const d = Date.parse(value);
-  return Number.isNaN(d) ? null : d;
+function setText(id,value){$(id).textContent=value;}
+function calcAnalysis(inputRows){
+ const parsed=sortRows(inputRows);if(!parsed.length)throw new Error("Data harga tidak dikenali.");
+ if(parsed.length>1 && parsed.some((x,i)=>i>0&&dateKey(x.date)!=null&&dateKey(parsed[i-1].date)!=null&&dateKey(x.date)<dateKey(parsed[i-1].date))) throw new Error("Urutan tanggal tidak valid.");
+ const closes=parsed.map(x=>x.close),last=parsed[parsed.length-1],prev=parsed.length>1?parsed[parsed.length-2]:null;
+ const dailyChange=prev&&prev.close?(last.close-prev.close)/prev.close*100:null;
+ const s5=sma(closes,5),s20=sma(closes,20),rsi=calcRSI(closes,14),macd=calcMACD(closes);
+ const recent=parsed.slice(-20),lows=recent.map(x=>x.low).filter(x=>x!=null&&x>0),highs=recent.map(x=>x.high).filter(x=>x!=null&&x>0);
+ const support=lows.length?Math.min(...lows):null,resistance=highs.length?Math.max(...highs):null;
+ let entry=null,target=null,stop=null,rr=null,potentialPct=null,riskPct=null;
+ if(support!=null&&resistance!=null&&resistance>support){
+   entry=support*1.01;target=resistance;stop=support*0.98;
+   if(target>entry&&entry>stop){rr=(target-entry)/(entry-stop);potentialPct=(target-entry)/entry*100;riskPct=(entry-stop)/entry*100;}
+ }
+ const enough=s5!=null&&s20!=null&&rsi!=null&&macd!=null;
+ const trendPositive=enough&&last.close>s20&&s5>s20;
+ const trendNegative=enough&&last.close<s20&&s5<s20;
+ const momentumPositive=enough&&macd.hist>0&&rsi>=50&&rsi<70;
+ const momentumNegative=enough&&macd.hist<0&&rsi<45;
+ const validLevels=rr!=null&&Number.isFinite(rr)&&target>entry&&entry>stop;
+ const nearEntry=validLevels&&last.close>=support&&last.close<=entry;
+ const brokeStop=stop!=null&&last.close<=stop;
+ let signal="PANTAU",cls="neutral",reason="Tren dan momentum belum memberi konfirmasi yang cukup.";
+ if(!enough){signal="DATA BELUM CUKUP";reason="Perlu sekurangnya 35 penutupan valid agar SMA, RSI, dan MACD lebih layak dibandingkan.";}
+ else if(brokeStop){signal="RISIKO MENINGKAT";cls="bad";reason="Harga sudah mencapai atau menembus batas risiko simulasi. Jangan otomatis menambah posisi; evaluasi rencana risiko.";}
+ else if(trendNegative){signal="HINDARI BELI";cls="bad";reason="Harga di bawah SMA 20 dan SMA 5 di bawah SMA 20. Tunggu bukti perbaikan tren.";}
+ else if(trendPositive&&rsi>=70){signal="PANTAU — JANGAN KEJAR";reason="Tren positif tetapi RSI tinggi; risiko membeli setelah kenaikan meningkat.";}
+ else if(trendPositive&&momentumPositive&&nearEntry&&validLevels&&rr>=1.5&&potentialPct<=30){signal="BELI BERSYARAT";cls="good";reason="Tren dan momentum mendukung, harga berada di area masuk simulasi, rasio minimal 1,5:1 dan target tidak lebih dari 30% dari harga masuk. Tetap verifikasi likuiditas dan harga.";}
+ else if(trendPositive&&momentumPositive&&!nearEntry){signal="PANTAU — TUNGGU AREA MASUK";reason="Tren dan momentum mendukung, tetapi harga belum berada di area masuk simulasi.";}
+ else if(trendPositive&&momentumPositive&&(!validLevels||rr<1.5||potentialPct>30)){signal="PANTAU — RISIKO/TARGET";reason=potentialPct>30?"Target simulasi terlalu jauh (>30% dari area masuk); rasio tinggi tidak dianggap cukup sebagai sinyal.":"Rasio potensi terhadap risiko belum memenuhi syarat.";}
+ else if(momentumNegative){signal="HINDARI BELI";cls="bad";reason="Momentum lemah: MACD di bawah signal dan RSI di bawah 45. Tunggu konfirmasi baru.";}
+ const score=enough?Math.max(0,Math.min(100,50+(trendPositive?20:trendNegative?-20:0)+(momentumPositive?15:momentumNegative?-15:0)+(rsi>=45&&rsi<65?5:rsi<30?-5:rsi>=70?-10:0)+(macd.hist>0?10:-5)+(nearEntry?5:0)-(potentialPct>30?10:0))):null;
+ return {symbol:"",rows:parsed,last,previous:prev,dailyChange,s5,s20,rsi,macd,support,resistance,entry,target,stop,rr,potentialPct,riskPct,enough,trendPositive,trendNegative,momentumPositive,momentumNegative,signal,cls,reason,score};
 }
-
-function displayDate(value) {
-  return value || "—";
+function renderAnalysis(a){
+ setText("price",rupiah(a.last.close));setText("change",a.dailyChange==null?"—":(a.dailyChange>0?"+":"")+fmt(a.dailyChange)+"%");setText("date",a.last.date||"—");
+ setText("sma5",a.s5==null?"Data belum cukup":rupiah(a.s5));setText("sma20",a.s20==null?"Data belum cukup":rupiah(a.s20));setText("rsi",a.rsi==null?"Data belum cukup":fmt(a.rsi));
+ setText("rsiNote",a.rsi==null?"Perlu minimal 15 harga penutupan":a.rsi>=70?"Momentum tinggi; waspadai koreksi":a.rsi<=30?"Momentum lemah; pantulan belum terkonfirmasi":"Momentum tidak berada di batas ekstrem");
+ setText("macd",a.macd==null?"Data belum cukup":fmt(a.macd.macd)+" / "+fmt(a.macd.signal));setText("macdNote",a.macd==null?"Perlu riwayat harga cukup":a.macd.hist>0?"MACD di atas signal":"MACD di bawah signal");
+ setText("support",a.support==null?"—":rupiah(a.support));setText("resistance",a.resistance==null?"—":rupiah(a.resistance));
+ setText("entry",a.entry==null?"Level belum valid":rupiah(a.support)+" – "+rupiah(a.entry));setText("target",a.target==null?"Level belum valid":rupiah(a.target));setText("stop",a.stop==null?"Level belum valid":rupiah(a.stop));
+ setText("rr",a.rr==null?"Belum layak dihitung":fmt(a.rr)+" : 1");
+ setText("rrNote",a.rr==null?"Periksa support dan resistance": "Potensi "+fmt(a.potentialPct)+"% · risiko "+fmt(a.riskPct)+"% dari batas atas area masuk");
+ setText("signal",a.signal);$("signal").className=a.cls;setText("reason",a.reason);
+ $("rows").innerHTML=a.rows.slice(-12).reverse().map(x=>"<tr><td>"+esc(x.date||"—")+"</td><td>"+fmt(x.open)+"</td><td>"+fmt(x.high)+"</td><td>"+fmt(x.low)+"</td><td>"+fmt(x.close)+"</td><td>"+fmt(x.volume)+"</td></tr>").join("");
 }
-
-function setText(id,value) {
-  $(id).textContent = value;
+function esc(v){return String(v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function clearAnalysis(message){
+ ["price","change","date","sma5","sma20","rsi","macd","support","resistance","entry","target","stop","rr"].forEach(id=>setText(id,"—"));
+ setText("signal","Data belum dapat dianalisis.");$("signal").className="";setText("reason",message);setText("rsiNote","");setText("macdNote","");setText("rrNote","");
+ $("rows").innerHTML='<tr><td colspan="6">Data tidak tersedia.</td></tr>';
 }
-
-function clearAnalysis(message) {
-  ["price","change","date","sma5","sma20","rsi","macd","support","resistance","entry","target","stop","rr"].forEach(id=>setText(id,"—"));
-  setText("signal","Data belum dapat dianalisis.");
-  setText("reason",message);
-  setText("rsiNote","");
-  setText("macdNote","");
-  $("rows").innerHTML='<tr><td colspan="6">Data tidak tersedia.</td></tr>';
+async function fetchRows(symbol){
+ const response=await fetch("/.netlify/functions/stock-history?symbol="+encodeURIComponent(symbol));
+ let json;try{json=await response.json();}catch{throw new Error("Respons server bukan JSON yang valid.");}
+ if(!response.ok||json.ok!==true)throw new Error(json.error||json.message||("Permintaan data "+symbol+" gagal."));
+ const rows=extractRows(json);if(!rows.length)throw new Error("Riwayat harga "+symbol+" kosong.");
+ return rows;
 }
-
-function analyze(rows) {
-  const parsed = normalizeRows(rows);
-  if (!parsed.length) throw new Error("Data harga tidak dikenali.");
-
-  const keys = parsed.map(x => dateKey(x.date));
-  if (keys.every(x => x !== null)) {
-    parsed.sort((a,b) => dateKey(a.date)-dateKey(b.date));
-  }
-
-  const closes = parsed.map(x => x.close);
-  const last = parsed[parsed.length-1];
-  const previous = parsed.length > 1 ? parsed[parsed.length-2] : null;
-
-  const dailyChange = previous && previous.close
-    ? (last.close-previous.close)/previous.close*100
-    : null;
-
-  const s5 = sma(closes,5);
-  const s20 = sma(closes,20);
-  const rsi = calcRSI(closes,14);
-  const macd = calcMACD(closes);
-
-  const recent = parsed.slice(-20);
-  const lows = recent.map(x=>x.low).filter(x=>x!=null);
-  const highs = recent.map(x=>x.high).filter(x=>x!=null);
-  const support = lows.length ? Math.min(...lows) : null;
-  const resistance = highs.length ? Math.max(...highs) : null;
-
-  setText("price",rupiah(last.close));
-  setText("change",dailyChange==null?"—":(dailyChange>0?"+":"")+fmt(dailyChange)+"%");
-  setText("date",displayDate(last.date));
-  setText("sma5",s5==null?"Data belum cukup":rupiah(s5));
-  setText("sma20",s20==null?"Data belum cukup":rupiah(s20));
-  setText("rsi",rsi==null?"Data belum cukup":fmt(rsi));
-
-  setText("rsiNote",rsi==null
-    ?"Perlu minimal 15 harga penutupan"
-    :rsi>=70
-      ?"Momentum tinggi; waspadai koreksi"
-      :rsi<=30
-        ?"Momentum lemah; pantulan belum terkonfirmasi"
-        :"Momentum berada di antara batas ekstrem");
-
-  setText("macd",macd==null?"Data belum cukup":fmt(macd.macd)+" / "+fmt(macd.signal));
-  setText("macdNote",macd==null
-    ?"Perlu riwayat harga yang cukup"
-    :macd.hist>0?"MACD di atas signal":"MACD di bawah signal");
-
-  setText("support",support==null?"—":rupiah(support));
-  setText("resistance",resistance==null?"—":rupiah(resistance));
-
-  let entry = null;
-  let target = null;
-  let stop = null;
-
-  if (support!=null && resistance!=null && resistance>support) {
-    entry = support*1.01;
-    target = resistance;
-    stop = support*0.98;
-  }
-
-  setText("entry",entry==null
-    ?"Belum cukup data"
-    :rupiah(support)+" – "+rupiah(entry));
-  setText("target",target==null?"Belum cukup data":rupiah(target));
-  setText("stop",stop==null?"Belum cukup data":rupiah(stop));
-
-  
-let currentRR = null;
-
-if (
-entry != null &&
-target != null &&
-stop != null &&
-target > entry &&
-entry > stop
-) {
-const potential = target - entry;
-const risk = entry - stop;
-
-if (potential > 0 && risk > 0) {
-currentRR = potential / risk;
-setText("rr", fmt(currentRR) + " : 1 (berdasarkan harga masuk)");
-} else {
-setText("rr", "Belum layak dihitung");
+async function runSingle(){
+ const symbol=$("sym").value.trim().toUpperCase().replace(/[^A-Z0-9]/g,"");
+ if(!symbol){setText("status","Masukkan kode saham terlebih dahulu.");return;}
+ $("go").disabled=true;setText("status","Mengambil riwayat harga "+symbol+"…");
+ try{const rows=await fetchRows(symbol);const a=calcAnalysis(rows);a.symbol=symbol;renderAnalysis(a);setText("status","Data berhasil dimuat ("+a.rows.length+" baris). Tanggal terakhir pada sumber: "+(a.last.date||"tidak tersedia")+". Verifikasi kesegaran data sebelum mengambil keputusan.");}
+ catch(e){clearAnalysis(e.message);setText("status","Gagal: "+e.message+" Periksa koneksi, API key, kuota, dan paket akses.");}
+ finally{$("go").disabled=false;}
 }
-} else {
-setText("rr", "Level simulasi belum valid");
+function rankLabel(a){
+ if(!a.enough)return "DATA KURANG";
+ if(a.signal==="BELI BERSYARAT")return "BERSYARAT";
+ if(a.signal.includes("HINDARI")||a.signal.includes("RISIKO"))return "LEMAH";
+ return "PANTAU";
 }
-
-let signal = "PANTAU — TUNGGU KONFIRMASI";
-let cls = "neutral";
-let reason = "Belum ada konfirmasi tren dan momentum yang cukup kuat.";
-
-if (s5 == null || s20 == null || macd == null || rsi == null) {
-  signal = "DATA BELUM CUKUP";
-  reason = "Riwayat harga belum cukup untuk menghitung semua indikator.";
-} else {
-  const trendPositive = last.close > s20 && s5 > s20;
-  const momentumPositive = macd.hist > 0 && rsi >= 50 && rsi < 70;
-  const trendNegative = last.close < s20 && s5 < s20;
-  const momentumNegative = macd.hist < 0 && rsi < 45;
-
-  const validLevels =
-    support != null &&
-    entry != null &&
-    target != null &&
-    stop != null &&
-    target > entry &&
-    entry > stop;
-
-  const priceNearEntry =
-    validLevels &&
-    last.close >= support &&
-    last.close <= entry;
-
-  
-const potential = validLevels ? target - entry : 0;
-const risk = validLevels ? entry - stop : 0;
-
-const validRR =
-  potential > 0 &&
-  risk > 0 &&
-  potential / risk >= 1.5;
-
-  const brokeRiskLimit =
-    stop != null && last.close <= stop;
-
-  if (brokeRiskLimit) {
-    signal = "EVALUASI RISIKO POSISI";
-    cls = "bad";
-    reason = "Harga mencapai atau menembus batas risiko simulasi. Pemegang saham perlu mengevaluasi rencana keluar; jangan otomatis menambah saham.";
-  } else if (trendNegative) {
-    signal = "HINDARI BELI";
-    cls = "bad";
-    reason = "Tren harga melemah karena harga berada di bawah SMA 20 dan SMA 5 berada di bawah SMA 20. Calon pembeli sebaiknya menunggu konfirmasi perbaikan tren.";
-  } else if (
-    trendPositive &&
-    momentumPositive &&
-    priceNearEntry &&
-    validRR
-  ) {
-    signal = "BELI BERSYARAT";
-    cls = "good";
-    reason = "Tren dan momentum mendukung, harga berada di area masuk simulasi, dan rasio potensi terhadap risiko minimal 1,5 : 1. Verifikasi harga dan likuiditas sebelum mengambil keputusan.";
-  } else if (trendPositive && rsi >= 70) {
-    signal = "PANTAU — JANGAN KEJAR HARGA";
-    cls = "neutral";
-    reason = "Tren positif, tetapi RSI tinggi. Tunggu peluang masuk yang lebih baik.";
-  } else if (trendPositive && momentumPositive && !priceNearEntry) {
-    signal = "PANTAU — TUNGGU AREA MASUK";
-    cls = "neutral";
-    reason = "Tren dan momentum mendukung, tetapi harga belum berada di area masuk simulasi.";
-  } else if (trendPositive && momentumPositive && !validRR) {
-    signal = "PANTAU — RASIO RISIKO BELUM MEMADAI";
-    cls = "neutral";
-    reason = "Tren dan momentum mendukung, tetapi rasio potensi terhadap risiko belum mencapai 1,5 : 1.";
-  }
+async function runRanking(){
+ const btn=$("rankBtn");btn.disabled=true;setText("rankStatus","Mengambil data 5 saham…");$("rankRows").innerHTML='<tr><td colspan="9">Sedang memuat…</td></tr>';
+ const results=await Promise.all(WATCHLIST.map(async symbol=>{
+  try{const rows=await fetchRows(symbol);const a=calcAnalysis(rows);a.symbol=symbol;return a;}
+  catch(e){return {symbol,error:e.message,score:null};}
+ }));
+ const valid=results.filter(x=>!x.error&&x.enough&&x.score!=null).sort((a,b)=>b.score-a.score);
+ const invalid=results.filter(x=>x.error||!x.enough||x.score==null);
+ const sorted=[...valid,...invalid];
+ $("rankRows").innerHTML=sorted.map((a,i)=>{
+  if(a.error)return "<tr><td>—</td><td><b>"+esc(a.symbol)+"</b></td><td colspan='6'>Data gagal: "+esc(a.error)+"</td><td>—</td></tr>";
+  if(!a.enough)return "<tr><td>—</td><td><b>"+esc(a.symbol)+"</b></td><td>"+rupiah(a.last.close)+"</td><td>"+esc(a.last.date||"—")+"</td><td>"+(a.dailyChange==null?"—":fmt(a.dailyChange)+"%")+"</td><td>"+fmt(a.rsi)+"</td><td>Belum cukup</td><td>"+esc(a.signal)+"</td><td>—</td></tr>";
+  return "<tr><td>"+(valid.includes(a)?valid.indexOf(a)+1:"—")+"</td><td><b>"+esc(a.symbol)+"</b></td><td>"+rupiah(a.last.close)+"</td><td>"+esc(a.last.date||"—")+"</td><td>"+(a.dailyChange==null?"—":(a.dailyChange>0?"+":"")+fmt(a.dailyChange)+"%")+"</td><td>"+fmt(a.rsi)+"</td><td>"+(a.trendPositive?"Positif":a.trendNegative?"Negatif":"Campuran")+"</td><td class='"+(a.cls||"neutral")+"'>"+esc(a.signal)+"</td><td>"+fmt(a.score)+"</td></tr>";
+ }).join("");
+ setText("rankStatus","Selesai: "+valid.length+" saham memiliki data indikator cukup; "+invalid.length+" saham tidak dapat diberi peringkat penuh. Bandingkan tanggal data sebelum menilai hasil.");
+ btn.disabled=false;
 }
-
-  setText("signal",signal);
-  $("signal").className = cls;
-  setText("reason",reason);
-
-  $("rows").innerHTML = parsed.slice(-12).reverse().map(x =>
-    "<tr><td>"+(x.date||"—")+"</td>"+
-    "<td>"+fmt(x.open)+"</td>"+
-    "<td>"+fmt(x.high)+"</td>"+
-    "<td>"+fmt(x.low)+"</td>"+
-    "<td>"+fmt(x.close)+"</td>"+
-    "<td>"+fmt(x.volume)+"</td></tr>"
-  ).join("");
-}
-   
-$("go").onclick = async () => {
-  const symbol = $("sym").value
-    .trim()
-    .toUpperCase()
-    .replace(/[^A-Z0-9]/g, "");
-
-  if (!symbol) {
-    setText("status", "Masukkan kode saham terlebih dahulu.");
-    return;
-  }
-
-  $("go").disabled = true;
-  setText("status", "Mengambil riwayat harga " + symbol + "…");
-
-  try {
-    const response = await fetch(
-      "/.netlify/functions/stock-history?symbol=" +
-      encodeURIComponent(symbol)
-    );
-
-    const json = await response.json();
-
-    if (!response.ok || json.ok !== true) {
-      throw new Error(
-        json.error ||
-        json.message ||
-        "Permintaan data gagal."
-      );
-    }
-
-    const rows = extractRows(json);
-
-    if (!rows.length) {
-      throw new Error("Data riwayat harga kosong.");
-    }
-
-    analyze(rows);
-
-    setText(
-      "status",
-      "Data berhasil dimuat. Pastikan tanggal data sesuai dengan kebutuhan riset."
-    );
-
-  } catch (error) {
-    clearAnalysis(error.message);
-
-    setText(
-      "status",
-      "Gagal: " + error.message +
-      " Periksa koneksi, API key, kuota, dan paket akses."
-    );
-
-  } finally {
-    $("go").disabled = false;
-  }
-};
-
-$("sym").addEventListener("keydown", event => {
-  if (event.key === "Enter") {
-    $("go").click();
-  }
-});
-
-$("go").click();
+$("go").onclick=runSingle;$("rankBtn").onclick=runRanking;
+$("sym").addEventListener("keydown",e=>{if(e.key==="Enter")runSingle();});
+runSingle();
 </script>
 </body>
 </html>
