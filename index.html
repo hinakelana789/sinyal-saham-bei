@@ -304,26 +304,25 @@ function analyze(rows) {
 
   
 let currentRR = null;
-const maxEntry = entry;
 
 if (
-  entry != null &&
-  target != null &&
-  stop != null &&
-  target > last.close &&
-  last.close > stop
+entry != null &&
+target != null &&
+stop != null &&
+target > entry &&
+entry > stop
 ) {
-  const potential = target - last.close;
-  const risk = last.close - stop;
+const potential = target - entry;
+const risk = entry - stop;
 
-  if (potential > 0 && risk > 0) {
-    currentRR = potential / risk;
-    setText("rr", fmt(currentRR) + " : 1");
-  } else {
-    setText("rr", "Belum layak dihitung");
-  }
+if (potential > 0 && risk > 0) {
+currentRR = potential / risk;
+setText("rr", fmt(currentRR) + " : 1 (berdasarkan harga masuk)");
 } else {
-  setText("rr", "Harga di luar area simulasi");
+setText("rr", "Belum layak dihitung");
+}
+} else {
+setText("rr", "Level simulasi belum valid");
 }
 
 let signal = "PANTAU — TUNGGU KONFIRMASI";
@@ -352,13 +351,14 @@ if (s5 == null || s20 == null || macd == null || rsi == null) {
     last.close >= support &&
     last.close <= entry;
 
-  const potential = validLevels ? target - last.close : 0;
-  const risk = validLevels ? last.close - stop : 0;
+  
+const potential = validLevels ? target - entry : 0;
+const risk = validLevels ? entry - stop : 0;
 
-  const validRR =
-    potential > 0 &&
-    risk > 0 &&
-    potential / risk >= 1.5;
+const validRR =
+  potential > 0 &&
+  risk > 0 &&
+  potential / risk >= 1.5;
 
   const brokeRiskLimit =
     stop != null && last.close <= stop;
