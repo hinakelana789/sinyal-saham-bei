@@ -114,17 +114,6 @@ export default async (request) => {
       allRows.push(...rows);
 
       const nextCursor = result?.data?.meta?.cursor;
-console.log("DEBUG PAGINATION:", JSON.stringify({
-  dataType: Array.isArray(result?.data)
-    ? "array"
-    : typeof result?.data,
-  dataKeys: result?.data &&
-    typeof result.data === "object"
-      ? Object.keys(result.data)
-      : [],
-  meta: result?.data?.meta || null,
-  nextCursorFound: Boolean(nextCursor)
-}));
       
       if (
         !nextCursor ||
