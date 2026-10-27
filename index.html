@@ -233,6 +233,22 @@ function parseWatchlist(){
  if(symbols.length>10)throw new Error("Maksimal 10 kode saham per perbandingan. Hapus beberapa kode lalu coba lagi.");
  return symbols;
 }
+
+function alignToCommonDate(results){
+ const usable=results.filter(x=>!x.error&&x.rows&&x.rows.length&&x.last&&x.last.date);
+ if(!usable.length)return {results,commonDate:null,excluded:[]};
+ // Gunakan tanggal terbaru yang tersedia pada semua kandidat; saham tanpa baris tepat pada tanggal itu tidak ikut ranking.
+ const commonDate=usable.reduce((min,x)=>x.last.date<min?x.last.date:min,usable[0].last.date);
+ const excluded=[];
+ const aligned=results.map(x=>{
+  if(x.error||!x.rows||!x.rows.length)return x;
+  const rows=x.rows.filter(r=>r.date&&r.date<=commonDate);
+  if(!rows.length||rows[rows.length-1].date!==commonDate){excluded.push(x.symbol);return {...x,alignmentExcluded:true,commonDate};}
+  const a=calcAnalysis(rows);a.symbol=x.symbol;a.commonDate=commonDate;return a;
+ });
+ return {results:aligned,commonDate,excluded};
+}
+
 async function runRanking(){
  const btn=$("rankBtn");let symbols;
  try{symbols=parseWatchlist();}catch(e){setText("rankStatus",e.message);return;}
@@ -242,17 +258,18 @@ async function runRanking(){
    try{const rows=await fetchRows(symbol);const a=calcAnalysis(rows);a.symbol=symbol;return a;}
    catch(e){return {symbol,error:e.message,score:null};}
   }));
-  const valid=results.filter(x=>!x.error&&x.enough&&x.score!=null).sort((a,b)=>b.score-a.score);
-  const invalid=results.filter(x=>x.error||!x.enough||x.score==null);
+  const aligned=alignToCommonDate(results);
+  const alignedResults=aligned.results;
+  const valid=alignedResults.filter(x=>!x.error&&!x.alignmentExcluded&&x.last?.date===aligned.commonDate&&x.enough&&x.score!=null).sort((a,b)=>b.score-a.score);
+  const invalid=alignedResults.filter(x=>x.error||x.alignmentExcluded||!x.enough||x.score==null);
   const sorted=[...valid,...invalid];
   $("rankRows").innerHTML=sorted.map((a)=>{
    if(a.error)return "<tr><td>—</td><td><b>"+esc(a.symbol)+"</b></td><td colspan='6'>Data gagal: "+esc(a.error)+"</td><td>—</td></tr>";
+   if(a.alignmentExcluded)return "<tr><td>—</td><td><b>"+esc(a.symbol)+"</b></td><td>"+rupiah(a.last.close)+"</td><td>"+esc(a.last.date||"—")+"</td><td>—</td><td>—</td><td>—</td><td>DIKECUALIKAN</td><td>—</td></tr>";
    if(!a.enough)return "<tr><td>—</td><td><b>"+esc(a.symbol)+"</b></td><td>"+rupiah(a.last.close)+"</td><td>"+esc(a.last.date||"—")+"</td><td>"+(a.dailyChange==null?"—":fmt(a.dailyChange)+"%")+"</td><td>"+fmt(a.rsi)+"</td><td>Belum cukup</td><td>"+esc(a.signal)+"</td><td>—</td></tr>";
    return "<tr><td>"+(valid.includes(a)?valid.indexOf(a)+1:"—")+"</td><td><b>"+esc(a.symbol)+"</b></td><td>"+rupiah(a.last.close)+"</td><td>"+esc(a.last.date||"—")+"</td><td>"+(a.dailyChange==null?"—":(a.dailyChange>0?"+":"")+fmt(a.dailyChange)+"%")+"</td><td>"+fmt(a.rsi)+"</td><td>"+(a.trendPositive?"Positif":a.trendNegative?"Negatif":"Campuran")+"</td><td class='"+(a.cls||"neutral")+"'>"+esc(a.signal)+"</td><td>"+fmt(a.score)+"</td></tr>";
   }).join("");
-  const dates=[...new Set(valid.map(a=>a.last.date).filter(Boolean))];
-  const dateWarning=dates.length>1?" PERHATIAN: tanggal data berbeda ("+dates.join(", ")+"); peringkat tidak sepenuhnya sebanding.":" Periksa tanggal data sebelum mengambil keputusan.";
-  setText("rankStatus","Selesai: "+valid.length+" dari "+symbols.length+" saham memiliki data indikator cukup; "+invalid.length+" belum dapat diberi peringkat penuh."+dateWarning);
+  setText("rankStatus","Tanggal pembanding: "+(aligned.commonDate||"tidak tersedia")+". "+valid.length+" saham dibandingkan pada tanggal yang sama; "+invalid.length+" saham gagal, datanya kurang, atau tidak memiliki baris pada tanggal pembanding sehingga tidak diberi peringkat. Bukan data real-time terjamin.");
  }catch(e){setText("rankStatus","Perbandingan gagal: "+e.message);}
  finally{btn.disabled=false;}
 }
@@ -269,20 +286,21 @@ async function runRadar(){
    try{const rows=await fetchRows(symbol);const a=calcAnalysis(rows);a.symbol=symbol;return a;}
    catch(e){return {symbol,error:e.message,score:null};}
   }));
-  const good=results.filter(a=>!a.error&&a.enough&&a.score!=null);
-  const sorted=[...good.sort((a,b)=>b.score-a.score),...results.filter(a=>a.error||!a.enough||a.score==null)];
+  const aligned=alignToCommonDate(results);
+  const alignedResults=aligned.results;
+  const good=alignedResults.filter(a=>!a.error&&!a.alignmentExcluded&&a.last?.date===aligned.commonDate&&a.enough&&a.score!=null);
+  const sorted=[...good.sort((a,b)=>b.score-a.score),...alignedResults.filter(a=>a.error||a.alignmentExcluded||!a.enough||a.score==null)];
   const strong=good.filter(a=>a.signal==="BELI BERSYARAT").length;
   const weak=good.filter(a=>a.signal.includes("HINDARI")||a.signal.includes("RISIKO")).length;
   const watch=good.length-strong-weak;
   setText("radarStrong",String(strong));setText("radarWatch",String(watch));setText("radarWeak",String(weak));
   $("radarRows").innerHTML=sorted.map(a=>{
    if(a.error)return "<tr><td><b>"+esc(a.symbol)+"</b></td><td colspan='5'>Gagal memuat: "+esc(a.error)+"</td><td>—</td></tr>";
+   if(a.alignmentExcluded)return "<tr><td><b>"+esc(a.symbol)+"</b></td><td>"+rupiah(a.last.close)+"</td><td>"+esc(a.last.date||"—")+"</td><td>—</td><td>—</td><td>DIKECUALIKAN — tanggal berbeda</td><td>—</td></tr>";
    if(!a.enough)return "<tr><td><b>"+esc(a.symbol)+"</b></td><td>"+rupiah(a.last.close)+"</td><td>"+esc(a.last.date||"—")+"</td><td>"+(a.dailyChange==null?"—":fmt(a.dailyChange)+"%")+"</td><td>Data kurang</td><td>"+esc(a.signal)+"</td><td>—</td></tr>";
    return "<tr><td><b>"+esc(a.symbol)+"</b></td><td>"+rupiah(a.last.close)+"</td><td>"+esc(a.last.date||"—")+"</td><td>"+(a.dailyChange==null?"—":(a.dailyChange>0?"+":"")+fmt(a.dailyChange)+"%")+"</td><td>"+(a.trendPositive?"Positif":a.trendNegative?"Negatif":"Campuran")+"</td><td class='"+(a.cls||"neutral")+"'>"+esc(a.signal)+"</td><td>"+fmt(a.score)+"</td></tr>";
   }).join("");
-  const dates=[...new Set(good.map(a=>a.last.date).filter(Boolean))];
-  const warning=dates.length>1?" Peringatan: tanggal data berbeda ("+dates.join(", ")+").":"";
-  setText("radarStatus","Pemindaian selesai: "+good.length+" dari "+symbols.length+" saham memiliki indikator cukup."+warning+" Bukan data real-time terjamin.");
+  setText("radarStatus","Tanggal pembanding: "+(aligned.commonDate||"tidak tersedia")+". "+good.length+" saham lolos untuk peringkat pada tanggal yang sama; saham lain dikecualikan jika tidak memiliki data pada tanggal tersebut atau indikatornya kurang. Bukan data real-time terjamin.");
   setText("radarUpdated","Pembaruan terakhir: "+new Date().toLocaleString("id-ID"));
  }catch(e){
   setText("radarStatus","Radar gagal: "+e.message);
