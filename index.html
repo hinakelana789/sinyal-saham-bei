@@ -326,51 +326,73 @@ if (
   setText("rr", "Harga di luar area simulasi");
 }
 
-  let signal = "TAHAN — tunggu konfirmasi.";
-  let cls = "neutral";
-  let reason = "Indikator belum searah. Tunggu peluang yang lebih jelas.";
+  
+let signal = "TAHAN — TUNGGU KONFIRMASI";
+let cls = "neutral";
+let reason = "Sinyal belum cukup kuat. Tunggu tren, momentum, dan risiko yang lebih jelas.";
 
-  if (s5==null || s20==null || macd==null || rsi==null) {
-    signal = "DATA BELUM CUKUP";
-    reason = "Riwayat harga belum cukup untuk menghitung semua indikator. Jangan gunakan sinyal sebelum data memadai.";
-  } else {
-    const trendPositive = last.close>s20 && s5>s20;
-    const momentumPositive = macd.hist>0 && rsi>=50 && rsi<70;
-    const trendNegative = last.close<s20 && s5<s20;
-    const momentumNegative = macd.hist<0 && rsi<45;
-    const brokeRiskLimit = stop!=null && last.close<=stop;
+if (s5 == null || s20 == null || macd == null || rsi == null) {
+  signal = "DATA BELUM CUKUP";
+  reason = "Riwayat harga belum cukup untuk menghitung semua indikator.";
+} else {
+  const trendPositive = last.close > s20 && s5 > s20;
+  const momentumPositive = macd.hist > 0 && rsi >= 50 && rsi < 70;
+  const trendNegative = last.close < s20 && s5 < s20;
+  const momentumNegative = macd.hist < 0 && rsi < 45;
 
-    if (brokeRiskLimit) {
-      signal = "EVALUASI JUAL";
-      cls = "bad";
-      reason = "Harga mencapai atau menembus batas risiko teknikal. Jika sudah memiliki saham, evaluasi rencana keluar; jangan otomatis menambah posisi.";
-    } else if (trendNegative && momentumNegative) {
-      signal = "HINDARI BELI / EVALUASI POSISI";
-      cls = "bad";
-      reason = "Tren dan momentum melemah. Jika belum memiliki saham, tunggu. Jika sudah memiliki, evaluasi risiko dan rencana transaksi.";
-    } else if (
-      trendPositive &&
-      momentumPositive &&
-      currentRR!=null &&
-      currentRR>=1.5
-    ) {
-      signal = "BELI BERSYARAT";
-      cls = "good";
-      reason = "Tren dan momentum mendukung, serta rasio potensi keuntungan terhadap risiko minimal 1,5:1. Periksa harga masuk, likuiditas, biaya, dan konfirmasi sebelum membeli.";
-    } else if (trendPositive && macd.hist>0 && rsi>=70) {
-      signal = "TAHAN / JANGAN KEJAR HARGA";
-      cls = "neutral";
-      reason = "Tren positif tetapi RSI tinggi. Hindari mengejar harga; jika sudah memiliki saham, evaluasi target dan batas risiko.";
-    } else if (trendPositive && momentumPositive) {
-      signal = "PANTAU — BELUM LAYAK BELI";
-      cls = "neutral";
-      reason = "Tren dan momentum mendukung, tetapi rasio potensi terhadap risiko belum memenuhi syarat.";
-    } else {
-      signal = "TAHAN — TUNGGU KONFIRMASI";
-      cls = "neutral";
-      reason = "Sinyal belum cukup kuat untuk beli atau evaluasi jual. Jangan mengambil keputusan berdasarkan satu indikator saja.";
-    }
+  const validLevels =
+    entry != null &&
+    target != null &&
+    stop != null &&
+    target > entry &&
+    entry > stop;
+
+  const priceNearEntry =
+    validLevels &&
+    last.close >= support &&
+    last.close <= entry;
+
+  const potential = validLevels ? target - last.close : 0;
+  const risk = validLevels ? last.close - stop : 0;
+
+  const validRR =
+    potential > 0 &&
+    risk > 0 &&
+    potential / risk >= 1.5;
+
+  const brokeRiskLimit = stop != null && last.close <= stop;
+
+  if (brokeRiskLimit) {
+    signal = "EVALUASI RISIKO / RENCANA KELUAR";
+    cls = "bad";
+    reason = "Harga mencapai atau menembus batas risiko simulasi. Evaluasi posisi dan rencana keluar; jangan otomatis menambah saham.";
+  } else if (trendNegative && momentumNegative) {
+    signal = "HINDARI BELI / EVALUASI POSISI";
+    cls = "bad";
+    reason = "Tren dan momentum melemah. Tunggu perbaikan tren sebelum mempertimbangkan pembelian.";
+  } else if (
+    trendPositive &&
+    momentumPositive &&
+    priceNearEntry &&
+    validRR
+  ) {
+    signal = "BELI BERSYARAT";
+    cls = "good";
+    reason = "Tren dan momentum mendukung, harga berada di area masuk simulasi, dan rasio potensi terhadap risiko minimal 1,5 : 1. Verifikasi harga, likuiditas, dan biaya sebelum mengambil keputusan.";
+  } else if (trendPositive && rsi >= 70) {
+    signal = "TAHAN / JANGAN KEJAR HARGA";
+    cls = "neutral";
+    reason = "Tren positif tetapi RSI tinggi. Hindari mengejar harga.";
+  } else if (trendPositive && momentumPositive && !priceNearEntry) {
+    signal = "PANTAU — TUNGGU AREA MASUK";
+    cls = "neutral";
+    reason = "Tren dan momentum mendukung, tetapi harga belum berada di area masuk simulasi.";
+  } else if (trendPositive && momentumPositive && !validRR) {
+    signal = "PANTAU — RASIO RISIKO BELUM MEMADAI";
+    cls = "neutral";
+    reason = "Tren dan momentum mendukung, tetapi rasio potensi terhadap risiko belum mencapai 1,5 : 1.";
   }
+}
 
   setText("signal",signal);
   $("signal").className = cls;
