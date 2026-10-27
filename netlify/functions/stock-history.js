@@ -1,11 +1,12 @@
 
-const headers = {
-  "Access-Control-Allow-Origin": "*",
-  "Content-Type": "application/json",
-  "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
-  "Pragma": "no-cache",
-  "Expires": "0"
-};
+export default async (request) => {
+  const headers = {
+    "Access-Control-Allow-Origin": "*",
+    "Content-Type": "application/json",
+    "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+    "Pragma": "no-cache",
+    "Expires": "0"
+  };
 
   if (request.method === "OPTIONS") {
     return new Response(null, {
@@ -59,14 +60,14 @@ const headers = {
         `?cursor=${encodeURIComponent(cursor)}`;
 
       const apiResponse = await fetch(endpoint, {
-  method: "GET",
-  cache: "no-store",
-  headers: {
-    "x-api-co-id": apiKey
-  }
-});
-      const body = await apiResponse.text();
+        method: "GET",
+        cache: "no-store",
+        headers: {
+          "x-api-co-id": apiKey
+        }
+      });
 
+      const body = await apiResponse.text();
       let result;
 
       try {
@@ -153,7 +154,7 @@ const headers = {
       }),
       { status: 200, headers }
     );
-  } catch {
+  } catch (error) {
     return new Response(
       JSON.stringify({
         ok: false,
