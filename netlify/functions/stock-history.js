@@ -139,33 +139,21 @@ export default async (request) => {
         uniqueRows.push(row);
       }
     }
-
+    
     return new Response(
-  JSON.stringify({
-    ok: uniqueRows.length > 0,
-    error: uniqueRows.length > 0
-      ? null
-      : "API berhasil dihubungi, tetapi format riwayat harga belum dikenali.",
-    symbol,
-    rows: uniqueRows,
-    pages_fetched: pages,
-    pagination_cursor_available:
-      Boolean(lastResult?.data?.meta?.cursor),
-    debug_pagination: {
-      data_type: Array.isArray(lastResult?.data)
-        ? "array"
-        : typeof lastResult?.data,
-      data_keys: lastResult?.data &&
-        typeof lastResult.data === "object"
-          ? Object.keys(lastResult.data)
-          : [],
-      meta: lastResult?.data?.meta || null,
-      next_cursor_found:
-        Boolean(lastResult?.data?.meta?.cursor)
-    }
-  }),
-  { status: 200, headers }
-);
+      JSON.stringify({
+        ok: uniqueRows.length > 0,
+        error: uniqueRows.length > 0
+          ? null
+          : "API berhasil dihubungi, tetapi format riwayat harga belum dikenali.",
+        symbol,
+        rows: uniqueRows,
+        pages_fetched: pages,
+        pagination_cursor_available:
+          Boolean(lastResult?.data?.meta?.cursor)
+      }),
+      { status: 200, headers }
+    );
   } catch (error) {
     return new Response(
       JSON.stringify({
