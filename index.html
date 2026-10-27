@@ -11,8 +11,9 @@ main{max-width:1100px;margin:auto;padding:16px}
 h1{font-size:27px;margin:8px 0}h1 span{color:#38d9c0}h2{font-size:18px;margin:0 0 12px}
 p{line-height:1.5}.muted{color:#9aabc4;font-size:13px}
 .panel{background:#121e30;border:1px solid #283951;border-radius:15px;padding:16px;margin:13px 0}
-input,button{font:inherit;border-radius:9px;padding:12px;border:1px solid #30435c}
-input{background:#091525;color:white;width:135px;text-transform:uppercase}
+input,textarea,button{font:inherit;border-radius:9px;padding:12px;border:1px solid #30435c}
+input,textarea{background:#091525;color:white;text-transform:uppercase}
+input{width:135px}textarea{width:100%;min-height:76px;resize:vertical;line-height:1.5}
 button{background:#38d9c0;color:#06131a;font-weight:700;cursor:pointer}button:disabled{opacity:.5}
 .stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
 .stat{background:#091525;border-radius:10px;padding:12px;min-width:0}.stat small{display:block;color:#9aabc4;margin-bottom:6px}
@@ -24,7 +25,7 @@ table{width:100%;border-collapse:collapse;font-size:12px;white-space:nowrap}
 th,td{text-align:right;padding:9px 7px;border-bottom:1px solid #283951}th:first-child,td:first-child{text-align:left}
 th{color:#aabbd3}.scroll{overflow-x:auto}.status{white-space:pre-wrap;color:#b4c5dd;font-size:13px;margin-top:10px}
 .note{font-size:12px;line-height:1.6;color:#aabbd3}.actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.actions button{margin-top:5px}.rank-table td:nth-child(1),.rank-table th:nth-child(1),.rank-table td:nth-child(2),.rank-table th:nth-child(2){text-align:left}
+.actions button{margin-top:5px}.rank-controls{display:grid;grid-template-columns:1fr;gap:8px;margin:10px 0}.rank-controls label{font-size:13px;color:#b4c5dd}.rank-table td:nth-child(1),.rank-table th:nth-child(1),.rank-table td:nth-child(2),.rank-table th:nth-child(2){text-align:left}
 @media(max-width:520px){main{padding:10px}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.grid{grid-template-columns:1fr}h1{font-size:24px}input{width:120px}}
 </style>
 </head>
@@ -36,7 +37,7 @@ th{color:#aabbd3}.scroll{overflow-x:auto}.status{white-space:pre-wrap;color:#b4c
 <section class="panel">
 <h2>Analisis saham</h2>
 <p class="muted">Contoh: BBCA, BBRI, TLKM, ASII, WAPO.</p>
-<div class="actions"><input id="sym" value="BBCA" maxlength="5" aria-label="Kode saham"><button id="go">Analisis</button><button id="rankBtn" type="button">Bandingkan 5 saham</button></div>
+<div class="actions"><input id="sym" value="BBCA" maxlength="5" aria-label="Kode saham"><button id="go">Analisis</button></div>
 <div id="status" class="status">Siap mengambil data.</div>
 <div class="stats" style="margin-top:12px">
 <div class="stat"><small>Penutupan terakhir</small><strong id="price">—</strong></div>
@@ -70,9 +71,25 @@ th{color:#aabbd3}.scroll{overflow-x:auto}.status{white-space:pre-wrap;color:#b4c
 </div><p class="note">Level ini simulasi dari rentang historis, bukan level pasti. Rasio tinggi dapat menyesatkan bila target sangat jauh atau peluang target tercapai rendah. Periksa spread, likuiditas, biaya, dan kondisi pasar.</p>
 </section>
 
+
+<section class="panel" id="radarPanel">
+<h2>Radar Market Online</h2>
+<p class="muted">Pindai daftar saham pilihan menggunakan data terbaru yang tersedia dari server. Tekan Refresh untuk mengambil ulang data. Ini bukan feed real-time atau pemindaian seluruh BEI.</p>
+<div class="stats">
+<div class="stat"><small>Kandidat menguat</small><strong id="radarStrong">—</strong></div>
+<div class="stat"><small>Perlu dipantau</small><strong id="radarWatch">—</strong></div>
+<div class="stat"><small>Risiko tinggi / lemah</small><strong id="radarWeak">—</strong></div>
+</div>
+<div class="actions" style="margin-top:12px"><button id="radarRefresh" type="button">Refresh Radar</button><span id="radarUpdated" class="muted">Belum diperbarui.</span></div>
+<div id="radarStatus" class="status">Tekan Refresh Radar untuk mulai memindai.</div>
+<div class="scroll"><table class="rank-table"><thead><tr><th>Saham</th><th>Harga</th><th>Tanggal data</th><th>Perubahan</th><th>Tren</th><th>Sinyal</th><th>Skor</th></tr></thead><tbody id="radarRows"><tr><td colspan="7">Belum ada hasil pemindaian.</td></tr></tbody></table></div>
+<p class="note">Radar menggunakan daftar saham pada bagian “Bandingkan dan peringkat saham”. Untuk mengganti saham yang dipindai, ubah daftar tersebut lalu tekan Refresh Radar. Data yang tersedia bisa tertunda; selalu periksa tanggal dan harga di aplikasi sekuritas.</p>
+</section>
+
 <section class="panel">
-<h2>Peringkat teknikal: BBCA, BBRI, TLKM, ASII, WAPO</h2>
-<p class="muted">Tekan “Bandingkan 5 saham”. Peringkat hanya membandingkan data yang berhasil dimuat; saham dengan data gagal atau tidak cukup tidak diberi skor.</p>
+<h2>Bandingkan dan peringkat saham</h2>
+<p class="muted">Kawan bisa mengetik kode saham sendiri. Pisahkan dengan koma atau spasi, maksimal 10 kode unik. Daftar awal berisi pilihan saham besar untuk memudahkan mulai; ini bukan jaminan aman atau rekomendasi beli.</p>
+<div class="rank-controls"><label for="rankSymbols">Kode saham yang ingin dibandingkan (maksimal 10)</label><textarea id="rankSymbols" rows="2" aria-label="Kode saham untuk dibandingkan">BBCA, BMRI, BBNI, ICBP, ASII, ANTM, ADRO, TLKM, UNTR, KLBF</textarea><div class="actions"><button id="rankBtn" type="button">Bandingkan saham pilihan</button><button id="defaultBtn" type="button">Pakai daftar awal</button></div></div>
 <div id="rankStatus" class="status">Belum ada perbandingan.</div>
 <div class="scroll"><table class="rank-table"><thead><tr><th>Rank</th><th>Saham</th><th>Harga</th><th>Tanggal data</th><th>Perubahan</th><th>RSI</th><th>Tren</th><th>Sinyal</th><th>Skor</th></tr></thead><tbody id="rankRows"><tr><td colspan="9">Belum ada data.</td></tr></tbody></table></div>
 <p class="note">Skor adalah indikator ringkas berbasis tren SMA, momentum RSI/MACD, dan kedekatan ke area masuk; bukan probabilitas keuntungan dan bukan rekomendasi otomatis.</p>
@@ -89,7 +106,7 @@ th{color:#aabbd3}.scroll{overflow-x:auto}.status{white-space:pre-wrap;color:#b4c
 </main>
 <script>
 const $ = id => document.getElementById(id);
-const WATCHLIST = ["BBCA","BBRI","TLKM","ASII","WAPO"];
+const DEFAULT_WATCHLIST = ["BBCA","BMRI","BBNI","ICBP","ASII","ANTM","ADRO","TLKM","UNTR","KLBF"];
 const num = v => { if(v===null||v===undefined||v==="") return null; const n=Number(v); return Number.isFinite(n)?n:null; };
 const fmt = v => v==null||!Number.isFinite(v)?"—":v.toLocaleString("id-ID",{maximumFractionDigits:2});
 const rupiah = v => v==null||!Number.isFinite(v)?"—":"Rp "+Math.round(v).toLocaleString("id-ID");
@@ -201,24 +218,73 @@ function rankLabel(a){
  if(a.signal.includes("HINDARI")||a.signal.includes("RISIKO"))return "LEMAH";
  return "PANTAU";
 }
-async function runRanking(){
- const btn=$("rankBtn");btn.disabled=true;setText("rankStatus","Mengambil data 5 saham…");$("rankRows").innerHTML='<tr><td colspan="9">Sedang memuat…</td></tr>';
- const results=await Promise.all(WATCHLIST.map(async symbol=>{
-  try{const rows=await fetchRows(symbol);const a=calcAnalysis(rows);a.symbol=symbol;return a;}
-  catch(e){return {symbol,error:e.message,score:null};}
- }));
- const valid=results.filter(x=>!x.error&&x.enough&&x.score!=null).sort((a,b)=>b.score-a.score);
- const invalid=results.filter(x=>x.error||!x.enough||x.score==null);
- const sorted=[...valid,...invalid];
- $("rankRows").innerHTML=sorted.map((a,i)=>{
-  if(a.error)return "<tr><td>—</td><td><b>"+esc(a.symbol)+"</b></td><td colspan='6'>Data gagal: "+esc(a.error)+"</td><td>—</td></tr>";
-  if(!a.enough)return "<tr><td>—</td><td><b>"+esc(a.symbol)+"</b></td><td>"+rupiah(a.last.close)+"</td><td>"+esc(a.last.date||"—")+"</td><td>"+(a.dailyChange==null?"—":fmt(a.dailyChange)+"%")+"</td><td>"+fmt(a.rsi)+"</td><td>Belum cukup</td><td>"+esc(a.signal)+"</td><td>—</td></tr>";
-  return "<tr><td>"+(valid.includes(a)?valid.indexOf(a)+1:"—")+"</td><td><b>"+esc(a.symbol)+"</b></td><td>"+rupiah(a.last.close)+"</td><td>"+esc(a.last.date||"—")+"</td><td>"+(a.dailyChange==null?"—":(a.dailyChange>0?"+":"")+fmt(a.dailyChange)+"%")+"</td><td>"+fmt(a.rsi)+"</td><td>"+(a.trendPositive?"Positif":a.trendNegative?"Negatif":"Campuran")+"</td><td class='"+(a.cls||"neutral")+"'>"+esc(a.signal)+"</td><td>"+fmt(a.score)+"</td></tr>";
- }).join("");
- setText("rankStatus","Selesai: "+valid.length+" saham memiliki data indikator cukup; "+invalid.length+" saham tidak dapat diberi peringkat penuh. Bandingkan tanggal data sebelum menilai hasil.");
- btn.disabled=false;
+function parseWatchlist(){
+ const raw=$("rankSymbols").value.toUpperCase().split(/[\s,;]+/).map(x=>x.trim()).filter(Boolean);
+ const symbols=[...new Set(raw.map(x=>x.replace(/[^A-Z0-9]/g,"" )).filter(Boolean))];
+ if(!symbols.length)throw new Error("Masukkan minimal satu kode saham.");
+ if(symbols.some(x=>x.length<3||x.length>5))throw new Error("Periksa kode saham. Gunakan kode 3–5 karakter, misalnya BBCA atau WAPO.");
+ if(symbols.length>10)throw new Error("Maksimal 10 kode saham per perbandingan. Hapus beberapa kode lalu coba lagi.");
+ return symbols;
 }
-$("go").onclick=runSingle;$("rankBtn").onclick=runRanking;
+async function runRanking(){
+ const btn=$("rankBtn");let symbols;
+ try{symbols=parseWatchlist();}catch(e){setText("rankStatus",e.message);return;}
+ btn.disabled=true;setText("rankStatus","Mengambil data "+symbols.length+" saham: "+symbols.join(", ")+"…");$("rankRows").innerHTML='<tr><td colspan="9">Sedang memuat…</td></tr>';
+ try{
+  const results=await Promise.all(symbols.map(async symbol=>{
+   try{const rows=await fetchRows(symbol);const a=calcAnalysis(rows);a.symbol=symbol;return a;}
+   catch(e){return {symbol,error:e.message,score:null};}
+  }));
+  const valid=results.filter(x=>!x.error&&x.enough&&x.score!=null).sort((a,b)=>b.score-a.score);
+  const invalid=results.filter(x=>x.error||!x.enough||x.score==null);
+  const sorted=[...valid,...invalid];
+  $("rankRows").innerHTML=sorted.map((a)=>{
+   if(a.error)return "<tr><td>—</td><td><b>"+esc(a.symbol)+"</b></td><td colspan='6'>Data gagal: "+esc(a.error)+"</td><td>—</td></tr>";
+   if(!a.enough)return "<tr><td>—</td><td><b>"+esc(a.symbol)+"</b></td><td>"+rupiah(a.last.close)+"</td><td>"+esc(a.last.date||"—")+"</td><td>"+(a.dailyChange==null?"—":fmt(a.dailyChange)+"%")+"</td><td>"+fmt(a.rsi)+"</td><td>Belum cukup</td><td>"+esc(a.signal)+"</td><td>—</td></tr>";
+   return "<tr><td>"+(valid.includes(a)?valid.indexOf(a)+1:"—")+"</td><td><b>"+esc(a.symbol)+"</b></td><td>"+rupiah(a.last.close)+"</td><td>"+esc(a.last.date||"—")+"</td><td>"+(a.dailyChange==null?"—":(a.dailyChange>0?"+":"")+fmt(a.dailyChange)+"%")+"</td><td>"+fmt(a.rsi)+"</td><td>"+(a.trendPositive?"Positif":a.trendNegative?"Negatif":"Campuran")+"</td><td class='"+(a.cls||"neutral")+"'>"+esc(a.signal)+"</td><td>"+fmt(a.score)+"</td></tr>";
+  }).join("");
+  const dates=[...new Set(valid.map(a=>a.last.date).filter(Boolean))];
+  const dateWarning=dates.length>1?" PERHATIAN: tanggal data berbeda ("+dates.join(", ")+"); peringkat tidak sepenuhnya sebanding.":" Periksa tanggal data sebelum mengambil keputusan.";
+  setText("rankStatus","Selesai: "+valid.length+" dari "+symbols.length+" saham memiliki data indikator cukup; "+invalid.length+" belum dapat diberi peringkat penuh."+dateWarning);
+ }catch(e){setText("rankStatus","Perbandingan gagal: "+e.message);}
+ finally{btn.disabled=false;}
+}
+
+async function runRadar(){
+ const btn=$("radarRefresh");let symbols;
+ try{symbols=parseWatchlist();}catch(e){setText("radarStatus",e.message);return;}
+ btn.disabled=true;
+ setText("radarStatus","Memindai "+symbols.length+" saham: "+symbols.join(", ")+"…");
+ setText("radarUpdated","Memuat data…");
+ $("radarRows").innerHTML='<tr><td colspan="7">Sedang memuat data…</td></tr>';
+ try{
+  const results=await Promise.all(symbols.map(async symbol=>{
+   try{const rows=await fetchRows(symbol);const a=calcAnalysis(rows);a.symbol=symbol;return a;}
+   catch(e){return {symbol,error:e.message,score:null};}
+  }));
+  const good=results.filter(a=>!a.error&&a.enough&&a.score!=null);
+  const sorted=[...good.sort((a,b)=>b.score-a.score),...results.filter(a=>a.error||!a.enough||a.score==null)];
+  const strong=good.filter(a=>a.signal==="BELI BERSYARAT").length;
+  const weak=good.filter(a=>a.signal.includes("HINDARI")||a.signal.includes("RISIKO")).length;
+  const watch=good.length-strong-weak;
+  setText("radarStrong",String(strong));setText("radarWatch",String(watch));setText("radarWeak",String(weak));
+  $("radarRows").innerHTML=sorted.map(a=>{
+   if(a.error)return "<tr><td><b>"+esc(a.symbol)+"</b></td><td colspan='5'>Gagal memuat: "+esc(a.error)+"</td><td>—</td></tr>";
+   if(!a.enough)return "<tr><td><b>"+esc(a.symbol)+"</b></td><td>"+rupiah(a.last.close)+"</td><td>"+esc(a.last.date||"—")+"</td><td>"+(a.dailyChange==null?"—":fmt(a.dailyChange)+"%")+"</td><td>Data kurang</td><td>"+esc(a.signal)+"</td><td>—</td></tr>";
+   return "<tr><td><b>"+esc(a.symbol)+"</b></td><td>"+rupiah(a.last.close)+"</td><td>"+esc(a.last.date||"—")+"</td><td>"+(a.dailyChange==null?"—":(a.dailyChange>0?"+":"")+fmt(a.dailyChange)+"%")+"</td><td>"+(a.trendPositive?"Positif":a.trendNegative?"Negatif":"Campuran")+"</td><td class='"+(a.cls||"neutral")+"'>"+esc(a.signal)+"</td><td>"+fmt(a.score)+"</td></tr>";
+  }).join("");
+  const dates=[...new Set(good.map(a=>a.last.date).filter(Boolean))];
+  const warning=dates.length>1?" Peringatan: tanggal data berbeda ("+dates.join(", ")+").":"";
+  setText("radarStatus","Pemindaian selesai: "+good.length+" dari "+symbols.length+" saham memiliki indikator cukup."+warning+" Bukan data real-time terjamin.");
+  setText("radarUpdated","Pembaruan terakhir: "+new Date().toLocaleString("id-ID"));
+ }catch(e){
+  setText("radarStatus","Radar gagal: "+e.message);
+  setText("radarUpdated","Pembaruan gagal.");
+ }finally{btn.disabled=false;}
+}
+$("radarRefresh").onclick=runRadar;
+
+$("go").onclick=runSingle;$("rankBtn").onclick=runRanking;$("defaultBtn").onclick=()=>{$("rankSymbols").value=DEFAULT_WATCHLIST.join(", ");setText("rankStatus","Daftar awal dimuat. Tekan Bandingkan saham pilihan untuk mengambil data.");};
 $("sym").addEventListener("keydown",e=>{if(e.key==="Enter")runSingle();});
 runSingle();
 </script>
