@@ -326,10 +326,9 @@ if (
   setText("rr", "Harga di luar area simulasi");
 }
 
-  
-let signal = "TAHAN — TUNGGU KONFIRMASI";
+let signal = "PANTAU — TUNGGU KONFIRMASI";
 let cls = "neutral";
-let reason = "Sinyal belum cukup kuat. Tunggu tren, momentum, dan risiko yang lebih jelas.";
+let reason = "Belum ada konfirmasi tren dan momentum yang cukup kuat.";
 
 if (s5 == null || s20 == null || macd == null || rsi == null) {
   signal = "DATA BELUM CUKUP";
@@ -341,6 +340,7 @@ if (s5 == null || s20 == null || macd == null || rsi == null) {
   const momentumNegative = macd.hist < 0 && rsi < 45;
 
   const validLevels =
+    support != null &&
     entry != null &&
     target != null &&
     stop != null &&
@@ -360,16 +360,17 @@ if (s5 == null || s20 == null || macd == null || rsi == null) {
     risk > 0 &&
     potential / risk >= 1.5;
 
-  const brokeRiskLimit = stop != null && last.close <= stop;
+  const brokeRiskLimit =
+    stop != null && last.close <= stop;
 
   if (brokeRiskLimit) {
-    signal = "EVALUASI RISIKO / RENCANA KELUAR";
+    signal = "EVALUASI RISIKO POSISI";
     cls = "bad";
-    reason = "Harga mencapai atau menembus batas risiko simulasi. Evaluasi posisi dan rencana keluar; jangan otomatis menambah saham.";
-  } else if (trendNegative && momentumNegative) {
-    signal = "HINDARI BELI / EVALUASI POSISI";
+    reason = "Harga mencapai atau menembus batas risiko simulasi. Pemegang saham perlu mengevaluasi rencana keluar; jangan otomatis menambah saham.";
+  } else if (trendNegative) {
+    signal = "HINDARI BELI";
     cls = "bad";
-    reason = "Tren dan momentum melemah. Tunggu perbaikan tren sebelum mempertimbangkan pembelian.";
+    reason = "Tren harga melemah karena harga berada di bawah SMA 20 dan SMA 5 berada di bawah SMA 20. Calon pembeli sebaiknya menunggu konfirmasi perbaikan tren.";
   } else if (
     trendPositive &&
     momentumPositive &&
@@ -378,11 +379,11 @@ if (s5 == null || s20 == null || macd == null || rsi == null) {
   ) {
     signal = "BELI BERSYARAT";
     cls = "good";
-    reason = "Tren dan momentum mendukung, harga berada di area masuk simulasi, dan rasio potensi terhadap risiko minimal 1,5 : 1. Verifikasi harga, likuiditas, dan biaya sebelum mengambil keputusan.";
+    reason = "Tren dan momentum mendukung, harga berada di area masuk simulasi, dan rasio potensi terhadap risiko minimal 1,5 : 1. Verifikasi harga dan likuiditas sebelum mengambil keputusan.";
   } else if (trendPositive && rsi >= 70) {
-    signal = "TAHAN / JANGAN KEJAR HARGA";
+    signal = "PANTAU — JANGAN KEJAR HARGA";
     cls = "neutral";
-    reason = "Tren positif tetapi RSI tinggi. Hindari mengejar harga.";
+    reason = "Tren positif, tetapi RSI tinggi. Tunggu peluang masuk yang lebih baik.";
   } else if (trendPositive && momentumPositive && !priceNearEntry) {
     signal = "PANTAU — TUNGGU AREA MASUK";
     cls = "neutral";
